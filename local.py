@@ -1,21 +1,27 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn import datasets, linear_model
+from sklearn import linear_model
+from sklearn.preprocessing import PolynomialFeatures
 
-# year, length, budget, rating
-data = np.genfromtxt('movies.tab', delimiter = '\t', skip_header = 1, usecols = (1, 2, 3, 4))
+# columns: year, length, budget, rating, action, animation, comedy, drama, documentary, romance, short
+data = np.genfromtxt('movies.tab', comments = '\\', delimiter = '\t', skip_header = 1, usecols = (0,1,2,3,4,17,18,19,20,21,22,23) )
+
 # remove rows with missing data. how does this work?!
 data = data[~np.isnan(data).any(axis=1)]
+
+
 # create X and Y
-data_X = data[:, :3]
+data_X = np.delete(data, 3, 1)
 data_y = data[:, 3]
 
-print(data_y)
+poly = PolynomialFeatures(2)
+data_X = poly.fit_transform(data_X)
+
 # Split into training/testing
-data_X_train = data_X[:-200]
-data_X_test = data_X[-200:]
-data_y_train = data_y[:-200]
-data_y_test = data_y[-200:]
+data_X_train = data_X[:-800]
+data_X_test = data_X[-800:]
+data_y_train = data_y[:-800]
+data_y_test = data_y[-800:]
 
 print("data_X_train: [", data_X_train.shape, "]")
 print("data_X_test: [", data_X_test.shape, "]")
@@ -28,10 +34,9 @@ regr = linear_model.LinearRegression()
 # Train the model using the training sets
 regr.fit(data_X_train, data_y_train)
 
-print("data_X_train: \n")
-print(data_X_train)
-print("data_y_train: \n")
-print(data_y_train)
+
+print(regr.predict(data_X_test))
+print(data_y_test)
 # The coefficients
 print('Coefficients: \n', regr.coef_)
 # The mean square error
